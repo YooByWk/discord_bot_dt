@@ -41,7 +41,7 @@ const commandFolders = fs.readdirSync(foldersPath)
 const prefix = "^"
 const helpCommands = /도움!|도와줘!|명령어|도움말|목록|도움/
 
-
+let commandcnt = 0
 for (const folder of commandFolders) {
   const commandsPath = path.join(foldersPath, folder)
   const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"))
@@ -51,13 +51,14 @@ for (const folder of commandFolders) {
     if ("data" in command) {
       client.commands.set(command.data.name, command)
       console.log(`${file}에 해당하는 command가 추가되었습니다.`)
-      logs.info(`${file}에 해당하는 command가 추가되었습니다.`)
+      commandcnt++
     } else {
       console.log(`Error: ${file} does not have a data property`)
       logs.error(`Error: ${file} <- 해당 파일에는 데이터 속성이 없습니다.`)
     }
   }
 }
+logs.info(`${commandcnt}개의  command가 추가되었습니다.`)
 
 // When the client is ready, run this code (only once).
 client.once(Events.ClientReady, (readyClient) => {
@@ -70,6 +71,7 @@ client.login(token)
 
 // 도움말 명령어 문자열
 client.on("messageCreate", (message) => {
+  const serverName = message.guild ? message.guild.name : null;
   let isAllowedChannel = [process.env.DESTINY_ID, process.env.PRIVATE_ID].includes(message.channel.id)
   // console.log(isAllowedChannel, 'isAllowedChannel', message.channel.id)
   let content = message.content
@@ -98,7 +100,7 @@ client.on("messageCreate", (message) => {
     client.commands.get(command).execute(message, args)
   } catch (error) {
     console.error(error)
-    logs.error(error)
+    logs.error(error, serverName)
     message.reply(`오류 발생!! 김청어에게 문의하세오. ${command} 커멘드 실행 중 오류 발생`)
   }
 })

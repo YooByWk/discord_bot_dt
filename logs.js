@@ -13,7 +13,8 @@ db.serialize(() => {
     level TEXT,
     message TEXT,
     timestamp INTEGER,
-    date TEXT
+    date TEXT,
+    serverName TEXT NULL 
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS duplicate_logs (
@@ -21,23 +22,24 @@ db.serialize(() => {
     userName TEXT,
     message TEXT,
     timestamp INTEGER,
-    date TEXT
+    date TEXT,
+    serverName TEXT NULL
   )`);
 });
 
-const logMsg = (level, message, userName = null) => {
+const logMsg = (level, message, serverName, userName = null) => {
   const timestamp = getTimestamp();
   const date = getDate(timestamp);
   const logMessage = `${message}`;
 
   if (level === 'duplicate') {
-    db.run(`INSERT INTO duplicate_logs (userName, message, timestamp, date) VALUES (?, ?, ?, ?)`, [userName, logMessage, timestamp, date], (err) => {
+    db.run(`INSERT INTO duplicate_logs (userName, message, timestamp, date, serverName) VALUES (?, ?, ?, ?, ?)`, [userName, logMessage, timestamp, date, serverName], (err) => {
       if (err) {
         console.error(err);
       }
     });
   } else {
-    db.run(`INSERT INTO logs (level, message, timestamp, date) VALUES (?, ?, ?, ?)`, [level, logMessage, timestamp, date], (err) => {
+    db.run(`INSERT INTO logs (level, message, timestamp, date, serverName) VALUES (?, ?, ?, ?, ?)`, [level, logMessage, timestamp, date, serverName], (err) => {
       if (err) {
         console.error(err);
       }
@@ -45,10 +47,10 @@ const logMsg = (level, message, userName = null) => {
   }
 };
 
-const info = (message) => logMsg('info', message);
-const error = (message) => logMsg('error', message);
-const warn = (message) => logMsg('warn', message);
-const duplicate = (userName, message) => logMsg('duplicate', message, userName);
+const info = (message, serverName) => logMsg('info', message, serverName);
+const error = (message, serverName) => logMsg('error', message, serverName);
+const warn = (message, serverName) => logMsg('warn', message, serverName);
+const duplicate = (userName, message, serverName) => logMsg('duplicate', message, serverName, userName);
 
 const logs = {
   logMsg,
@@ -59,3 +61,9 @@ const logs = {
 };
 
 module.exports = logs;
+
+// Example usage
+logs.info('Server started', 'Server1');
+logs.error('An error occurred', 'Server1');
+logs.warn('This is a warning', 'Server1');
+logs.duplicate('User1', 'Duplicate message', 'Server1');

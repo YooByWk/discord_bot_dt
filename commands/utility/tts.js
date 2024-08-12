@@ -16,7 +16,7 @@ const  logs  = require("../../logs");
 const timestamp = Date.now();
 const date = new Date(timestamp); 
 console.log("ALLOWED_CHANNEL_ID: ", ALLOWED_CHANNEL_ID);
-logs.info(`ALLOWED_CHANNEL_ID: ${ALLOWED_CHANNEL_ID}`);
+// logs.info(`ALLOWED_CHANNEL_ID: ${ALLOWED_CHANNEL_ID}`);
 let speed = 1.6; // 기본 속도
 let queue = [];
 let isPlaying = false;
@@ -98,8 +98,9 @@ module.exports = {
     const filePath = path.join(__dirname, `tts_${uniqueId}.mp3`);
     // 사용자가 음성 채널에 있는지 확인합니다.
     const voiceChannel = message.member.voice.channel;
+    let serverName = message.guild ? message.guild.name : null;
     if (!voiceChannel) {
-      logs.warn("유저가 음성 채널에 없어요.");
+      logs.warn("유저가 음성 채널에 없어요.", serverName);
       return message.reply("먼저 음성 채널에 들어가주세요.");
     }
     // 음성 채널에 연결합니다.
@@ -112,7 +113,7 @@ module.exports = {
     EventEmitter.defaultMaxListeners = 50;
     connection.on(VoiceConnectionStatus.Ready, () => {
       console.log("봇 연결~!");
-      logs.info("봇 연결~!");
+      logs.info("봇 연결~!", serverName);
     });
 
     // 오디오 플레이어를 생성하고 음성 파일을 재생합니다.
@@ -122,7 +123,7 @@ module.exports = {
     // 이벤트 리스너를 한 번만 설정합니다.
     
     player.on(AudioPlayerStatus.Idle, () => {
-      logs.info(`재생이 끝났습니다. :${user} || 내용 :  ${text} // 시간: ${date.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'})}`);
+      logs.info(`재생이 끝났습니다. :${user} || 내용 :  ${text} // 시간: ${date.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'})}`, serverName);
       console.log(`재생이 끝났습니다. :${user} || 내용 :  ${text} // 시간: ${date.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'})}`);
       resetIdleTimer();
     });
@@ -144,7 +145,7 @@ module.exports = {
           leaveGtts.save(leaveFilePath, (err) => {
             if (err) {
               console.error(err);
-              logs.error(err);
+              logs.error(err, serverName);
               connection.destroy();
               return;
             }
@@ -165,7 +166,7 @@ module.exports = {
                   }
                   connection.destroy();
                   console.log("5분동안 아무 동작이 없어 연결을 종료합니다. tts 157 : 종료");
-                  logs.info("5분동안 아무 동작이 없어 연결 종료. tts 157 : 종료");
+                  logs.info("5분동안 아무 동작이 없어 연결 종료. tts 157 : 종료", serverName);
 
                 });
               });
@@ -179,12 +180,12 @@ module.exports = {
     gtts.save(tempFilePath, (err) => {
       if (err) {
         console.error(err);
-        logs.error(err);
+        logs.error(err,serverName);
         return message.reply("텍스트 변환 중 오류가 발생했습니다. ㅠ;");
       }
       
       if (queue.length >= 5) {
-        logs.duplicate(user, text);
+        logs.duplicate(user, text,serverName);
         return message.reply("너무 요청이 많아요... 잠시 후에 다시 시도해주세요.");
       }
 
