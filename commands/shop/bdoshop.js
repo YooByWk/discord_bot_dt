@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js")
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js")
-
 const axios = require("axios")
 const dotenv = require("dotenv")
 const path = require("path")

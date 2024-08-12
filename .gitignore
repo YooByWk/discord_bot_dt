@@ -1,3 +1,6 @@
 node_modules
 .env
 config.json
+logs/*.db
+commands/utility/*.mp3
+commands/utility/*.mp3.temp 
